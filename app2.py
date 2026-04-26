@@ -6,9 +6,16 @@ import os
 import math
 import time
 from collections import Counter
+from streamlit.components.v1 import html
 
 os.environ['HF_HOME'] = './hf_cache'
 os.environ['TRANSFORMERS_CACHE'] = './hf_cache'
+
+# Session state initialization for login
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+    st.session_state.username = ""
+    st.session_state.checked_local_storage = False
 
 CLASS_LABELS = {
     0: "Mild Demented",
@@ -25,7 +32,7 @@ st.set_page_config(
     page_title="Alzheimer's Disease Classification",
     page_icon="🧠",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 st.html("""
@@ -33,17 +40,13 @@ st.html("""
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
     <style>
-    /* ── Hide sidebar entirely ─────────────────────────────── */
-    [data-testid="stSidebar"] { display: none !important; }
-    [data-testid="collapsedControl"] { display: none !important; }
-
     /* ── Global reset ──────────────────────────────────────── */
     html, body,
     [data-testid="stApp"],
     [data-testid="stAppViewContainer"],
     .main, .block-container {
-        background: #080c14 !important;
-        color: #e2e8f0;
+        background: #ffffff !important;
+        color: #1a1a1a;
         font-family: 'Syne', sans-serif;
     }
     .block-container {
@@ -51,28 +54,58 @@ st.html("""
         padding-top: 2rem !important;
     }
     [data-testid="stHeader"] {
-        background: transparent !important;
+        background: #ffffff !important;
     }
-
-    /* ── Animated scanline overlay ─────────────────────────── */
-    .main::before {
-        content: '';
-        position: fixed; top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 2px,
-            rgba(0,255,200,0.015) 2px,
-            rgba(0,255,200,0.015) 4px
-        );
-        pointer-events: none;
-        z-index: 999;
-        animation: scanMove 8s linear infinite;
+    
+    /* ── Sidebar styling ─────────────────────────────────────── */
+    [data-testid="stSidebar"] {
+        background: #ffffff !important;
+        border-right: 1px solid #e0e0e0;
     }
-    @keyframes scanMove {
-        0%   { background-position: 0 0; }
-        100% { background-position: 0 100px; }
+    [data-testid="stSidebar"] > div:first-child {
+        background: #ffffff !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #1a1a1a !important;
+    }
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] h4,
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] span,
+    [data-testid="stSidebar"] label {
+        color: #1a1a1a !important;
+    }
+    [data-testid="stSidebar"] hr {
+        border-color: #e0e0e0 !important;
+    }
+    [data-testid="stSidebar"] .stButton > button {
+        background: #f0f0f0 !important;
+        color: #1a1a1a !important;
+        border: 1px solid #d0d0d0 !important;
+    }
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background: #e0e0e0 !important;
+        border-color: #0066cc !important;
+    }
+    [data-testid="stSidebar"] .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #0066cc, #0099ff) !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+    .sidebar-nav-item {
+        padding: 0.75rem 1rem;
+        margin: 0.25rem 0;
+        border-radius: 8px;
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .sidebar-nav-item:hover {
+        background: #f0f0f0;
+        border-color: #0066cc;
     }
 
     /* ── Hero header ───────────────────────────────────────── */
@@ -85,18 +118,13 @@ st.html("""
         font-size: clamp(2rem, 5vw, 3.5rem);
         font-weight: 800;
         letter-spacing: -0.02em;
-        background: linear-gradient(135deg, #00ffc8 0%, #00a8ff 50%, #bf5af2 100%);
+        background: linear-gradient(135deg, #0066cc 0%, #0099ff 50%, #6633cc 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        animation: titlePulse 4s ease-in-out infinite;
-    }
-    @keyframes titlePulse {
-        0%, 100% { filter: brightness(1); }
-        50%       { filter: brightness(1.2); }
     }
     .hero-sub {
-        color: #64748b;
+        color: #666666;
         font-family: 'DM Mono', monospace;
         font-size: 0.85rem;
         letter-spacing: 0.15em;
@@ -107,29 +135,29 @@ st.html("""
     /* ── Weight badge ──────────────────────────────────────── */
     .weight-badge {
         display: inline-flex; gap: 1rem;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(0,255,200,0.2);
+        background: rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,102,204,0.2);
         border-radius: 50px;
         padding: 0.5rem 1.5rem;
         margin: 1rem auto;
         font-family: 'DM Mono', monospace;
         font-size: 0.82rem;
-        color: #94a3b8;
+        color: #666666;
         justify-content: center;
     }
-    .weight-badge span { color: #00ffc8; font-weight: 600; }
+    .weight-badge span { color: #0066cc; font-weight: 600; }
 
     /* ── Tab styling ───────────────────────────────────────── */
     .stTabs [data-baseweb="tab-list"] {
-        background: rgba(255,255,255,0.03);
+        background: rgba(0,0,0,0.03);
         border-radius: 14px;
         gap: 6px;
         padding: 6px 10px;
-        border: 1px solid rgba(255,255,255,0.07);
+        border: 1px solid rgba(0,0,0,0.1);
     }
     .stTabs [data-baseweb="tab"] {
         border-radius: 10px;
-        color: #64748b !important;
+        color: #666666 !important;
         font-family: 'Syne', sans-serif;
         font-weight: 600;
         font-size: 0.95rem !important;
@@ -138,15 +166,15 @@ st.html("""
         letter-spacing: 0.02em;
     }
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, rgba(0,255,200,0.15), rgba(0,168,255,0.15)) !important;
-        color: #00ffc8 !important;
-        border: 1px solid rgba(0,255,200,0.3) !important;
+        background: linear-gradient(135deg, rgba(0,102,204,0.15), rgba(0,153,255,0.15)) !important;
+        color: #0066cc !important;
+        border: 1px solid rgba(0,102,204,0.3) !important;
     }
 
     /* ── Result card ───────────────────────────────────────── */
     .result-card {
-        background: linear-gradient(135deg, rgba(0,255,200,0.08) 0%, rgba(0,168,255,0.08) 100%);
-        border: 1px solid rgba(0,255,200,0.25);
+        background: linear-gradient(135deg, rgba(0,102,204,0.08) 0%, rgba(0,153,255,0.08) 100%);
+        border: 1px solid rgba(0,102,204,0.25);
         border-radius: 16px;
         padding: 2rem;
         text-align: center;
@@ -155,28 +183,20 @@ st.html("""
         overflow: hidden;
         animation: cardReveal 0.6s ease-out both;
     }
-    .result-card::before {
-        content: '';
-        position: absolute; top: -50%; left: -50%;
-        width: 200%; height: 200%;
-        background: conic-gradient(from 0deg, transparent 0deg, rgba(0,255,200,0.05) 60deg, transparent 120deg);
-        animation: spin 6s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes cardReveal {
         from { opacity: 0; transform: translateY(20px) scale(0.97); }
         to   { opacity: 1; transform: translateY(0)    scale(1); }
     }
-    .result-label { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: #64748b; font-family: 'DM Mono', monospace; position: relative; z-index: 1; }
+    .result-label { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: #666666; font-family: 'DM Mono', monospace; position: relative; z-index: 1; }
     .result-value { font-size: 2.2rem; font-weight: 800; margin: 0.5rem 0; position: relative; z-index: 1;
-        background: linear-gradient(90deg, #00ffc8, #00a8ff);
+        background: linear-gradient(90deg, #0066cc, #0099ff);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .result-conf  { font-family: 'DM Mono', monospace; font-size: 0.9rem; color: #94a3b8; position: relative; z-index: 1; }
+    .result-conf  { font-family: 'DM Mono', monospace; font-size: 0.9rem; color: #666666; position: relative; z-index: 1; }
 
     /* ── Fusion card ───────────────────────────────────────── */
     .fusion-card {
-        background: linear-gradient(135deg, rgba(191,90,242,0.12) 0%, rgba(0,255,200,0.08) 100%);
-        border: 1px solid rgba(191,90,242,0.35);
+        background: linear-gradient(135deg, rgba(102,51,204,0.12) 0%, rgba(0,102,204,0.08) 100%);
+        border: 1px solid rgba(102,51,204,0.35);
         border-radius: 16px;
         padding: 2.2rem;
         text-align: center;
@@ -185,24 +205,14 @@ st.html("""
         position: relative;
         overflow: hidden;
     }
-    .fusion-card::after {
-        content: '';
-        position: absolute; inset: 0;
-        background: linear-gradient(90deg, transparent 30%, rgba(191,90,242,0.04) 50%, transparent 70%);
-        animation: shimmer 3s ease-in-out infinite;
-    }
-    @keyframes shimmer {
-        0%   { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-    }
     .fusion-value { font-size: 2.5rem; font-weight: 800;
-        background: linear-gradient(90deg, #bf5af2, #00ffc8);
+        background: linear-gradient(90deg, #6633cc, #0066cc);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
     /* ── Animated loader ───────────────────────────────────── */
     .loader-container {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(0,255,200,0.15);
+        background: rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,102,204,0.15);
         border-radius: 12px;
         padding: 1.5rem 2rem;
         margin: 1rem 0;
@@ -212,13 +222,13 @@ st.html("""
     .loader-step {
         display: flex; align-items: center; gap: 0.75rem;
         padding: 0.5rem 0;
-        color: #475569;
-        border-bottom: 1px solid rgba(255,255,255,0.04);
+        color: #999999;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
         animation: stepFade 0.4s ease-out both;
     }
     .loader-step:last-child { border-bottom: none; }
-    .loader-step.active { color: #00ffc8; }
-    .loader-step.done   { color: #64748b; }
+    .loader-step.active { color: #0066cc; }
+    .loader-step.done   { color: #666666; }
     @keyframes stepFade { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
     .step-dot {
         width: 8px; height: 8px; border-radius: 50%;
@@ -228,41 +238,41 @@ st.html("""
     @keyframes dotPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.6); } }
 
     /* ── Progress bar ──────────────────────────────────────── */
-    .stProgress > div > div { background: linear-gradient(90deg, #00ffc8, #00a8ff) !important; border-radius: 4px; }
-    .stProgress { background: rgba(255,255,255,0.06) !important; border-radius: 4px; }
+    .stProgress > div > div { background: linear-gradient(90deg, #0066cc, #0099ff) !important; border-radius: 4px; }
+    .stProgress { background: rgba(0,0,0,0.06) !important; border-radius: 4px; }
 
     /* ── Info / warning boxes ──────────────────────────────── */
     .info-panel {
-        background: rgba(0,168,255,0.08);
-        border: 1px solid rgba(0,168,255,0.25);
+        background: rgba(0,102,204,0.08);
+        border: 1px solid rgba(0,102,204,0.25);
         border-radius: 10px;
         padding: 1rem 1.25rem;
         margin: 0.75rem 0;
         font-size: 0.88rem;
-        color: #94a3b8;
+        color: #666666;
     }
 
     /* ── Upload area ───────────────────────────────────────── */
     [data-testid="stFileUploader"] {
-        background: rgba(0,255,200,0.03) !important;
-        border: 2px dashed rgba(0,255,200,0.2) !important;
+        background: rgba(0,102,204,0.03) !important;
+        border: 2px dashed rgba(0,102,204,0.2) !important;
         border-radius: 12px !important;
         transition: border-color 0.3s;
     }
     [data-testid="stFileUploader"]:hover {
-        border-color: rgba(0,255,200,0.5) !important;
+        border-color: rgba(0,102,204,0.5) !important;
     }
 
     /* ── Selectbox ─────────────────────────────────────────── */
     .stSelectbox [data-baseweb="select"] {
-        background: rgba(255,255,255,0.04) !important;
-        border-color: rgba(255,255,255,0.1) !important;
+        background: rgba(0,0,0,0.02) !important;
+        border-color: rgba(0,0,0,0.1) !important;
     }
 
     /* ── Buttons ───────────────────────────────────────────── */
     .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #00ffc8, #00a8ff) !important;
-        color: #080c14 !important;
+        background: linear-gradient(135deg, #0066cc, #0099ff) !important;
+        color: #ffffff !important;
         font-family: 'Syne', sans-serif !important;
         font-weight: 700 !important;
         border: none !important;
@@ -272,15 +282,15 @@ st.html("""
     }
     .stButton > button[kind="primary"]:hover {
         transform: translateY(-2px) !important;
-        box-shadow: 0 8px 24px rgba(0,255,200,0.3) !important;
+        box-shadow: 0 8px 24px rgba(0,102,204,0.3) !important;
     }
 
     /* ── Dividers ──────────────────────────────────────────── */
-    hr { border-color: rgba(255,255,255,0.07) !important; }
+    hr { border-color: rgba(0,0,0,0.1) !important; }
 
     /* ── Section headings ──────────────────────────────────── */
-    h2, h3 { color: #e2e8f0 !important; font-family: 'Syne', sans-serif !important; }
-    h4      { color: #94a3b8 !important; font-family: 'Syne', sans-serif !important; font-size: 0.9rem !important; letter-spacing: 0.1em; text-transform: uppercase; }
+    h2, h3 { color: #1a1a1a !important; font-family: 'Syne', sans-serif !important; }
+    h4      { color: #666666 !important; font-family: 'Syne', sans-serif !important; font-size: 0.9rem !important; letter-spacing: 0.1em; text-transform: uppercase; }
 
     /* ── Interpretation alerts ─────────────────────────────── */
     .stSuccess, .stWarning, .stError, .stInfo {
@@ -297,24 +307,24 @@ st.html("""
         margin: 1rem 0;
     }
     .cdr-domain {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.07);
+        background: rgba(0,0,0,0.02);
+        border: 1px solid rgba(0,0,0,0.1);
         border-radius: 10px;
         padding: 0.75rem 1rem;
         transition: border-color 0.3s;
     }
-    .cdr-domain:hover { border-color: rgba(0,255,200,0.3); }
+    .cdr-domain:hover { border-color: rgba(0,102,204,0.3); }
 
     /* ── CDR scoring steps ─────────────────────────────────── */
     .cdr-step {
-        background: rgba(255,255,255,0.03);
-        border-left: 3px solid rgba(0,255,200,0.4);
+        background: rgba(0,0,0,0.02);
+        border-left: 3px solid rgba(0,102,204,0.4);
         border-radius: 0 8px 8px 0;
         padding: 0.5rem 1rem;
         margin: 0.3rem 0;
         font-family: 'DM Mono', monospace;
         font-size: 0.78rem;
-        color: #64748b;
+        color: #666666;
         animation: stepFade 0.5s ease-out both;
     }
 
@@ -323,7 +333,7 @@ st.html("""
     .prob-label {
         font-size: 0.82rem;
         font-family: 'DM Mono', monospace;
-        color: #94a3b8;
+        color: #666666;
         margin-bottom: 0.3rem;
     }
 
@@ -679,9 +689,128 @@ GENOTYPE_OPTIONS = ["2/2", "2/3", "2/4", "3/3", "3/4", "4/4"]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+#  LOCAL STORAGE HELPERS
+# ─────────────────────────────────────────────────────────────────────────────
+def save_to_local_storage(username):
+    """Save login info to browser's localStorage"""
+    html(f"""
+        <script>
+            localStorage.setItem('alz_logged_in', 'true');
+            localStorage.setItem('alz_username', '{username}');
+        </script>
+    """, height=0)
+
+def clear_local_storage():
+    """Clear login info from browser's localStorage"""
+    html("""
+        <script>
+            localStorage.removeItem('alz_logged_in');
+            localStorage.removeItem('alz_username');
+        </script>
+    """, height=0)
+
+def check_local_storage():
+    """Check localStorage and restore login state - returns JS to inject"""
+    return """
+        <script>
+            const loggedIn = localStorage.getItem('alz_logged_in');
+            const username = localStorage.getItem('alz_username');
+            if (loggedIn === 'true' && username) {
+                // Send data back to Streamlit via query params
+                const currentUrl = new URL(window.location.href);
+                if (!currentUrl.searchParams.has('auto_login')) {
+                    currentUrl.searchParams.set('auto_login', 'true');
+                    currentUrl.searchParams.set('username', username);
+                    window.location.href = currentUrl.toString();
+                }
+            }
+        </script>
+    """
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  LOGIN PAGE
+# ─────────────────────────────────────────────────────────────────────────────
+def login_page():
+    # Check for auto-login from localStorage via query params
+    query_params = st.query_params
+    if query_params.get("auto_login") == "true" and query_params.get("username"):
+        st.session_state.logged_in = True
+        st.session_state.username = query_params.get("username")
+        # Clear the query params
+        st.query_params.clear()
+        st.rerun()
+        return
+    
+    # Inject JS to check localStorage on first load
+    if not st.session_state.get("checked_local_storage"):
+        st.session_state.checked_local_storage = True
+        html(check_local_storage(), height=0)
+    
+    st.markdown("""
+    <div style='max-width: 400px; margin: 100px auto; padding: 2rem;'>
+        <div style='text-align: center; margin-bottom: 2rem;'>
+            <span style='font-size: 4rem;'>🧠</span>
+            <h1 style='color: #1a1a1a; margin-top: 1rem;'>Alzheimer's Classification</h1>
+            <p style='color: #666;'>Please login to continue</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        username = st.text_input("Username", placeholder="Enter your username")
+        password = st.text_input("Password", type="password", placeholder="Enter your password")
+        
+        if st.button("Login", type="primary", use_container_width=True):
+            if username:
+                st.session_state.logged_in = True
+                st.session_state.username = username
+                # Save to localStorage
+                save_to_local_storage(username)
+                st.rerun()
+            else:
+                st.error("Please enter a username")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 #  MAIN APP
 # ─────────────────────────────────────────────────────────────────────────────
 def main():
+    # Check if user is logged in
+    if not st.session_state.logged_in:
+        login_page()
+        return
+    
+    # Sidebar with username and navigation
+    with st.sidebar:
+        st.markdown(f"### Welcome, {st.session_state.username}!")
+        st.markdown("---")
+        st.markdown("### Navigation")
+        
+        # Initialize current page in session state
+        if "current_page" not in st.session_state:
+            st.session_state.current_page = "MRI Image"
+        
+        # Navigation buttons
+        if st.button("🖼️ MRI Image", use_container_width=True, type="primary" if st.session_state.current_page == "MRI Image" else "secondary"):
+            st.session_state.current_page = "MRI Image"
+            st.rerun()
+        if st.button("📋 Clinical & Genetic Features", use_container_width=True, type="primary" if st.session_state.current_page == "Clinical" else "secondary"):
+            st.session_state.current_page = "Clinical"
+            st.rerun()
+        if st.button("📊 Results & Fusion", use_container_width=True, type="primary" if st.session_state.current_page == "Results" else "secondary"):
+            st.session_state.current_page = "Results"
+            st.rerun()
+        
+        st.markdown("---")
+        if st.button("Logout", use_container_width=True):
+            st.session_state.logged_in = False
+            st.session_state.username = ""
+            st.session_state.checked_local_storage = False
+            clear_local_storage()
+            st.rerun()
+    
     # Hero header
     st.markdown("""
     <div class='hero-header'>
@@ -703,11 +832,8 @@ def main():
 
     st.markdown("---")
 
-    tab_img, tab_clinical, tab_results = st.tabs(
-        ["🖼️  MRI Image", "📋  Clinical & Genetic Features", "📊  Results & Fusion"])
-
-    # ── Tab 1: MRI ────────────────────────────────────────────────────────────
-    with tab_img:
+    # ── Page: MRI ────────────────────────────────────────────────────────────
+    if st.session_state.current_page == "MRI Image":
         st.markdown("## 📤 Upload Brain MRI Scan")
         st.markdown("<div class='info-panel'>Upload a T1-weighted axial MRI slice. Supported formats: JPG, PNG.</div>", unsafe_allow_html=True)
 
@@ -748,10 +874,10 @@ def main():
                             prob_bar(lbl, p, SEVERITY_COLORS[lbl])
                         interpretation_block(img_pred)
         else:
-            st.markdown("<div style='text-align:center;padding:3rem;color:#475569;font-family:DM Mono,monospace;font-size:0.85rem'>Upload a brain MRI scan above to begin image analysis.</div>", unsafe_allow_html=True)
+            st.markdown("<div style='text-align:center;padding:3rem;color:#666666;font-family:DM Mono,monospace;font-size:0.85rem'>Upload a brain MRI scan above to begin image analysis.</div>", unsafe_allow_html=True)
 
-    # ── Tab 2: Clinical Rule Engine ───────────────────────────────────────────
-    with tab_clinical:
+    # ── Page: Clinical Rule Engine ───────────────────────────────────────────
+    elif st.session_state.current_page == "Clinical":
         st.markdown("## 📋 Clinical Dementia Rating (CDR)")
         # Genotype
         st.markdown("### 🧬 APOE Genotype")
@@ -819,8 +945,8 @@ def main():
 
             interpretation_block(tab_pred)
 
-    # ── Tab 3: Fusion ─────────────────────────────────────────────────────────
-    with tab_results:
+    # ── Page: Fusion ─────────────────────────────────────────────────────────
+    elif st.session_state.current_page == "Results":
         st.markdown("## 📊 Multimodal Fusion Results")
 
 
@@ -830,7 +956,7 @@ def main():
         have_tab = tab_probs_stored is not None
 
         if not have_img and not have_tab:
-            st.markdown("<div style='text-align:center;padding:3rem;color:#475569;font-family:DM Mono,monospace;font-size:0.85rem'>Run at least one model to see results here.</div>", unsafe_allow_html=True)
+            st.markdown("<div style='text-align:center;padding:3rem;color:#666666;font-family:DM Mono,monospace;font-size:0.85rem'>Run at least one model to see results here.</div>", unsafe_allow_html=True)
             return
 
         col_img, col_tab = st.columns(2)
