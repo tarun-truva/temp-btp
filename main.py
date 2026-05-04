@@ -1,6 +1,5 @@
-def main():
-    print("Hello from temp-btp!")
-
+import subprocess
+import sys
 
 if __name__ == "__main__":
-    main()
+    subprocess.run([sys.executable, "-m", "streamlit", "run", "app/app2.py"])

@@ -14,3 +14,20 @@ hf_cache/
 
 # Streamlit
 .streamlit/
+
+# macOS
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Model files (large binaries)
+*.pkl
+models/*.pkl
+
+# Data files (large CSVs)
+data/*.csv
+
+# IDE
+.idea/
+.vscode/

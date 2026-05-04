@@ -39,6 +39,7 @@ st.html("""
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
     /* ── Global reset ──────────────────────────────────────── */
     html, body,
@@ -87,12 +88,18 @@ st.html("""
     }
     [data-testid="stSidebar"] .stButton > button:hover {
         background: #e0e0e0 !important;
-        border-color: #0066cc !important;
+        border-color: #333333 !important;
     }
-    [data-testid="stSidebar"] .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #0066cc, #0099ff) !important;
+    [data-testid="stSidebar"] .stButton > button[kind="primary"],
+    [data-testid="stSidebar"] .stButton > button[kind="primary"] * {
+        background: #1a1a1a !important;
         color: #ffffff !important;
         border: none !important;
+    }
+    [data-testid="stSidebar"] .stButton > button[kind="primary"] p,
+    [data-testid="stSidebar"] .stButton > button[kind="primary"] span,
+    [data-testid="stSidebar"] .stButton > button[kind="primary"] div {
+        color: #ffffff !important;
     }
     .sidebar-nav-item {
         padding: 0.75rem 1rem;
@@ -105,7 +112,7 @@ st.html("""
     }
     .sidebar-nav-item:hover {
         background: #f0f0f0;
-        border-color: #0066cc;
+        border-color: #333333;
     }
 
     /* ── Hero header ───────────────────────────────────────── */
@@ -118,10 +125,8 @@ st.html("""
         font-size: clamp(2rem, 5vw, 3.5rem);
         font-weight: 800;
         letter-spacing: -0.02em;
-        background: linear-gradient(135deg, #0066cc 0%, #0099ff 50%, #6633cc 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: #1a1a1a;
+        -webkit-text-fill-color: #1a1a1a;
     }
     .hero-sub {
         color: #666666;
@@ -131,12 +136,20 @@ st.html("""
         text-transform: uppercase;
         margin-top: 0.5rem;
     }
+    
+    /* ── Icon styling ───────────────────────────────────────── */
+    .icon-brain {
+        font-size: 4rem;
+        color: #1a1a1a;
+        display: block;
+        text-align: center;
+    }
 
     /* ── Weight badge ──────────────────────────────────────── */
     .weight-badge {
         display: inline-flex; gap: 1rem;
         background: rgba(0,0,0,0.03);
-        border: 1px solid rgba(0,102,204,0.2);
+        border: 1px solid rgba(0,0,0,0.1);
         border-radius: 50px;
         padding: 0.5rem 1.5rem;
         margin: 1rem auto;
@@ -145,7 +158,7 @@ st.html("""
         color: #666666;
         justify-content: center;
     }
-    .weight-badge span { color: #0066cc; font-weight: 600; }
+    .weight-badge span { color: #1a1a1a; font-weight: 600; }
 
     /* ── Tab styling ───────────────────────────────────────── */
     .stTabs [data-baseweb="tab-list"] {
@@ -166,15 +179,15 @@ st.html("""
         letter-spacing: 0.02em;
     }
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, rgba(0,102,204,0.15), rgba(0,153,255,0.15)) !important;
-        color: #0066cc !important;
-        border: 1px solid rgba(0,102,204,0.3) !important;
+        background: rgba(0,0,0,0.08) !important;
+        color: #1a1a1a !important;
+        border: 1px solid rgba(0,0,0,0.2) !important;
     }
 
     /* ── Result card ───────────────────────────────────────── */
     .result-card {
-        background: linear-gradient(135deg, rgba(0,102,204,0.08) 0%, rgba(0,153,255,0.08) 100%);
-        border: 1px solid rgba(0,102,204,0.25);
+        background: rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.1);
         border-radius: 16px;
         padding: 2rem;
         text-align: center;
@@ -189,14 +202,13 @@ st.html("""
     }
     .result-label { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: #666666; font-family: 'DM Mono', monospace; position: relative; z-index: 1; }
     .result-value { font-size: 2.2rem; font-weight: 800; margin: 0.5rem 0; position: relative; z-index: 1;
-        background: linear-gradient(90deg, #0066cc, #0099ff);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        color: #1a1a1a; -webkit-text-fill-color: #1a1a1a; }
     .result-conf  { font-family: 'DM Mono', monospace; font-size: 0.9rem; color: #666666; position: relative; z-index: 1; }
 
     /* ── Fusion card ───────────────────────────────────────── */
     .fusion-card {
-        background: linear-gradient(135deg, rgba(102,51,204,0.12) 0%, rgba(0,102,204,0.08) 100%);
-        border: 1px solid rgba(102,51,204,0.35);
+        background: rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.15);
         border-radius: 16px;
         padding: 2.2rem;
         text-align: center;
@@ -206,13 +218,12 @@ st.html("""
         overflow: hidden;
     }
     .fusion-value { font-size: 2.5rem; font-weight: 800;
-        background: linear-gradient(90deg, #6633cc, #0066cc);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        color: #1a1a1a; -webkit-text-fill-color: #1a1a1a; }
 
     /* ── Animated loader ───────────────────────────────────── */
     .loader-container {
         background: rgba(0,0,0,0.03);
-        border: 1px solid rgba(0,102,204,0.15);
+        border: 1px solid rgba(0,0,0,0.1);
         border-radius: 12px;
         padding: 1.5rem 2rem;
         margin: 1rem 0;
@@ -227,7 +238,7 @@ st.html("""
         animation: stepFade 0.4s ease-out both;
     }
     .loader-step:last-child { border-bottom: none; }
-    .loader-step.active { color: #0066cc; }
+    .loader-step.active { color: #1a1a1a; }
     .loader-step.done   { color: #666666; }
     @keyframes stepFade { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
     .step-dot {
@@ -238,13 +249,13 @@ st.html("""
     @keyframes dotPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.6); } }
 
     /* ── Progress bar ──────────────────────────────────────── */
-    .stProgress > div > div { background: linear-gradient(90deg, #0066cc, #0099ff) !important; border-radius: 4px; }
+    .stProgress > div > div { background: #1a1a1a !important; border-radius: 4px; }
     .stProgress { background: rgba(0,0,0,0.06) !important; border-radius: 4px; }
 
     /* ── Info / warning boxes ──────────────────────────────── */
     .info-panel {
-        background: rgba(0,102,204,0.08);
-        border: 1px solid rgba(0,102,204,0.25);
+        background: rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.1);
         border-radius: 10px;
         padding: 1rem 1.25rem;
         margin: 0.75rem 0;
@@ -254,13 +265,13 @@ st.html("""
 
     /* ── Upload area ───────────────────────────────────────── */
     [data-testid="stFileUploader"] {
-        background: rgba(0,102,204,0.03) !important;
-        border: 2px dashed rgba(0,102,204,0.2) !important;
+        background: rgba(0,0,0,0.02) !important;
+        border: 2px dashed rgba(0,0,0,0.2) !important;
         border-radius: 12px !important;
         transition: border-color 0.3s;
     }
     [data-testid="stFileUploader"]:hover {
-        border-color: rgba(0,102,204,0.5) !important;
+        border-color: rgba(0,0,0,0.4) !important;
     }
 
     /* ── Selectbox ─────────────────────────────────────────── */
@@ -271,7 +282,7 @@ st.html("""
 
     /* ── Buttons ───────────────────────────────────────────── */
     .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #0066cc, #0099ff) !important;
+        background: #1a1a1a !important;
         color: #ffffff !important;
         font-family: 'Syne', sans-serif !important;
         font-weight: 700 !important;
@@ -282,7 +293,7 @@ st.html("""
     }
     .stButton > button[kind="primary"]:hover {
         transform: translateY(-2px) !important;
-        box-shadow: 0 8px 24px rgba(0,102,204,0.3) !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2) !important;
     }
 
     /* ── Dividers ──────────────────────────────────────────── */
@@ -313,12 +324,12 @@ st.html("""
         padding: 0.75rem 1rem;
         transition: border-color 0.3s;
     }
-    .cdr-domain:hover { border-color: rgba(0,102,204,0.3); }
+    .cdr-domain:hover { border-color: rgba(0,0,0,0.3); }
 
     /* ── CDR scoring steps ─────────────────────────────────── */
     .cdr-step {
         background: rgba(0,0,0,0.02);
-        border-left: 3px solid rgba(0,102,204,0.4);
+        border-left: 3px solid rgba(0,0,0,0.3);
         border-radius: 0 8px 8px 0;
         padding: 0.5rem 1rem;
         margin: 0.3rem 0;
@@ -339,14 +350,10 @@ st.html("""
 
     /* ── Brain scan icon ───────────────────────────────────── */
     .brain-icon {
-        font-size: 5rem;
+        font-size: 4rem;
         display: block;
         text-align: center;
-        animation: brainFloat 3s ease-in-out infinite;
-    }
-    @keyframes brainFloat {
-        0%,100% { transform: translateY(0); }
-        50%      { transform: translateY(-8px); }
+        color: #1a1a1a;
     }
     </style>
 """)
@@ -581,10 +588,10 @@ def prob_bar(label, prob, color):
 
 def interpretation_block(label):
     msgs = {
-        "Non Demented":       ("success", "✅ No signs of dementia detected. Regular check-ups are still recommended."),
-        "Very Mild Demented": ("warning", "⚠️ Very mild signs detected. Early intervention may help. Consult a neurologist."),
-        "Mild Demented":      ("warning", "⚠️ Mild dementia indicated. Medical evaluation and treatment planning are recommended."),
-        "Moderate Demented":  ("error",   "🚨 Moderate dementia indicated. Comprehensive medical care is essential. Consult a healthcare professional immediately."),
+        "Non Demented":       ("success", "No signs of dementia detected. Regular check-ups are still recommended."),
+        "Very Mild Demented": ("warning", "Very mild signs detected. Early intervention may help. Consult a neurologist."),
+        "Mild Demented":      ("warning", "Mild dementia indicated. Medical evaluation and treatment planning are recommended."),
+        "Moderate Demented":  ("error",   "Moderate dementia indicated. Comprehensive medical care is essential. Consult a healthcare professional immediately."),
     }
     kind, msg = msgs.get(label, ("info", ""))
     getattr(st, kind)(msg)
@@ -593,26 +600,26 @@ def interpretation_block(label):
 def animated_loader_image():
     """Shows a step-by-step animated loading sequence for the image model."""
     steps = [
-        ("🔬", "Preprocessing MRI scan…"),
-        ("🧠", "Loading neural network weights…"),
-        ("⚡", "Running quick inference pass…"),
-        ("🔍", "Scanning cortical features…"),
-        ("📐", "Analysing hippocampal volume…"),
-        ("🧮", "Computing softmax probabilities…"),
-        ("✅", "Inference complete!"),
+        "Preprocessing MRI scan...",
+        "Loading neural network weights...",
+        "Running quick inference pass...",
+        "Scanning cortical features...",
+        "Analysing hippocampal volume...",
+        "Computing softmax probabilities...",
+        "Inference complete!",
     ]
     container = st.empty()
     completed = []
-    for icon, msg in steps:
-        completed.append((icon, msg))
-        html = "<div class='loader-container'>"
-        for i, (ic, m) in enumerate(completed):
+    for msg in steps:
+        completed.append(msg)
+        html_content = "<div class='loader-container'>"
+        for i, m in enumerate(completed):
             is_last = i == len(completed) - 1
             dot_cls = "pulse" if is_last else ""
             step_cls = "active" if is_last else "done"
-            html += f"<div class='loader-step {step_cls}'><span class='step-dot {dot_cls}'></span>{ic}&nbsp; {m}</div>"
-        html += "</div>"
-        container.markdown(html, unsafe_allow_html=True)
+            html_content += f"<div class='loader-step {step_cls}'><span class='step-dot {dot_cls}'></span>{m}</div>"
+        html_content += "</div>"
+        container.markdown(html_content, unsafe_allow_html=True)
         time.sleep(0.45)
     time.sleep(0.3)
     container.empty()
@@ -621,26 +628,26 @@ def animated_loader_image():
 def animated_loader_clinical():
     """Shows a step-by-step animated loading sequence for the clinical engine."""
     steps = [
-        ("📋", "Parsing CDR domain scores…"),
-        ("⚖️",  "Applying Morris (1993) global scoring rules…"),
-        ("➕", "Calculating CDR Sum-of-Boxes…"),
-        ("📊", "Mapping to base probability distributions…"),
-        ("🔒", "Anchoring to CDR Global class…"),
-        ("🧬", "Applying APOE genotype modifier…"),
-        ("✅", "Clinical analysis complete!"),
+        "Parsing CDR domain scores...",
+        "Applying Morris (1993) global scoring rules...",
+        "Calculating CDR Sum-of-Boxes...",
+        "Mapping to base probability distributions...",
+        "Anchoring to CDR Global class...",
+        "Applying APOE genotype modifier...",
+        "Clinical analysis complete!",
     ]
     container = st.empty()
     completed = []
-    for icon, msg in steps:
-        completed.append((icon, msg))
-        html = "<div class='loader-container'>"
-        for i, (ic, m) in enumerate(completed):
+    for msg in steps:
+        completed.append(msg)
+        html_content = "<div class='loader-container'>"
+        for i, m in enumerate(completed):
             is_last = i == len(completed) - 1
             dot_cls = "pulse" if is_last else ""
             step_cls = "active" if is_last else "done"
-            html += f"<div class='loader-step {step_cls}'><span class='step-dot {dot_cls}'></span>{ic}&nbsp; {m}</div>"
-        html += "</div>"
-        container.markdown(html, unsafe_allow_html=True)
+            html_content += f"<div class='loader-step {step_cls}'><span class='step-dot {dot_cls}'></span>{m}</div>"
+        html_content += "</div>"
+        container.markdown(html_content, unsafe_allow_html=True)
         time.sleep(0.40)
     time.sleep(0.3)
     container.empty()
@@ -648,25 +655,25 @@ def animated_loader_clinical():
 
 def animated_loader_fusion():
     steps = [
-        ("🔀", "Collecting image model probabilities…"),
-        ("📋", "Collecting clinical engine probabilities…"),
-        ("⚖️",  f"Applying weights — Image: {IMG_WEIGHT*100:.0f}% | Clinical: {TAB_WEIGHT*100:.0f}%…"),
-        ("🧮", "Computing weighted average fusion…"),
-        ("🎯", "Determining final diagnosis…"),
-        ("✅", "Fusion complete!"),
+        "Collecting image model probabilities...",
+        "Collecting clinical engine probabilities...",
+        f"Applying weights - Image: {IMG_WEIGHT*100:.0f}% | Clinical: {TAB_WEIGHT*100:.0f}%...",
+        "Computing weighted average fusion...",
+        "Determining final diagnosis...",
+        "Fusion complete!",
     ]
     container = st.empty()
     completed = []
-    for icon, msg in steps:
-        completed.append((icon, msg))
-        html = "<div class='loader-container'>"
-        for i, (ic, m) in enumerate(completed):
+    for msg in steps:
+        completed.append(msg)
+        html_content = "<div class='loader-container'>"
+        for i, m in enumerate(completed):
             is_last = i == len(completed) - 1
             dot_cls = "pulse" if is_last else ""
             step_cls = "active" if is_last else "done"
-            html += f"<div class='loader-step {step_cls}'><span class='step-dot {dot_cls}'></span>{ic}&nbsp; {m}</div>"
-        html += "</div>"
-        container.markdown(html, unsafe_allow_html=True)
+            html_content += f"<div class='loader-step {step_cls}'><span class='step-dot {dot_cls}'></span>{m}</div>"
+        html_content += "</div>"
+        container.markdown(html_content, unsafe_allow_html=True)
         time.sleep(0.35)
     time.sleep(0.3)
     container.empty()
@@ -750,7 +757,7 @@ def login_page():
     st.markdown("""
     <div style='max-width: 400px; margin: 100px auto; padding: 2rem;'>
         <div style='text-align: center; margin-bottom: 2rem;'>
-            <span style='font-size: 4rem;'>🧠</span>
+            <i class='fas fa-brain' style='font-size: 4rem; color: #1a1a1a;'></i>
             <h1 style='color: #1a1a1a; margin-top: 1rem;'>Alzheimer's Classification</h1>
             <p style='color: #666;'>Please login to continue</p>
         </div>
@@ -793,13 +800,13 @@ def main():
             st.session_state.current_page = "MRI Image"
         
         # Navigation buttons
-        if st.button("🖼️ MRI Image", use_container_width=True, type="primary" if st.session_state.current_page == "MRI Image" else "secondary"):
+        if st.button("MRI Image", use_container_width=True, type="primary" if st.session_state.current_page == "MRI Image" else "secondary"):
             st.session_state.current_page = "MRI Image"
             st.rerun()
-        if st.button("📋 Clinical & Genetic Features", use_container_width=True, type="primary" if st.session_state.current_page == "Clinical" else "secondary"):
+        if st.button("Clinical & Genetic Features", use_container_width=True, type="primary" if st.session_state.current_page == "Clinical" else "secondary"):
             st.session_state.current_page = "Clinical"
             st.rerun()
-        if st.button("📊 Results & Fusion", use_container_width=True, type="primary" if st.session_state.current_page == "Results" else "secondary"):
+        if st.button("Results & Fusion", use_container_width=True, type="primary" if st.session_state.current_page == "Results" else "secondary"):
             st.session_state.current_page = "Results"
             st.rerun()
         
@@ -814,11 +821,9 @@ def main():
     # Hero header
     st.markdown("""
     <div class='hero-header'>
-        <span class='brain-icon'>🧠</span>
+        <i class='fas fa-brain brain-icon'></i>
         <div class='hero-title'>Alzheimer's Classification</div>
         <div class='hero-sub'>Multimodal Neural + Clinical Analysis</div>
-        <div style='display:flex;justify-content:center;margin-top:1rem'>
-            
     </div>
     """, unsafe_allow_html=True)
 
@@ -834,7 +839,7 @@ def main():
 
     # ── Page: MRI ────────────────────────────────────────────────────────────
     if st.session_state.current_page == "MRI Image":
-        st.markdown("## 📤 Upload Brain MRI Scan")
+        st.markdown("## Upload Brain MRI Scan")
         st.markdown("<div class='info-panel'>Upload a T1-weighted axial MRI slice. Supported formats: JPG, PNG.</div>", unsafe_allow_html=True)
 
         uploaded_file = st.file_uploader(
@@ -848,11 +853,11 @@ def main():
                 st.image(image, use_container_width=True, caption="Uploaded MRI")
                 st.markdown(f"""
                 <div class='info-panel'>
-                    📐 <b>Dimensions:</b> {image.size[0]} × {image.size[1]} px &nbsp;|&nbsp;
-                    🎨 <b>Mode:</b> {image.mode}
+                    <b>Dimensions:</b> {image.size[0]} x {image.size[1]} px &nbsp;|&nbsp;
+                    <b>Mode:</b> {image.mode}
                 </div>""", unsafe_allow_html=True)
             with c2:
-                if st.button("🚀 Analyse MRI Scan", type="primary", use_container_width=True):
+                if st.button("Analyse MRI Scan", type="primary", use_container_width=True):
                     animated_loader_image()
                     img_pred, img_conf, img_probs = predict_image(
                         image, img_processor, img_model)
@@ -869,7 +874,7 @@ def main():
                             <div class='result-value' style='-webkit-background-clip:text;background-clip:text'>{img_pred}</div>
                             <div class='result-conf'>Confidence: {img_conf:.1f}%</div>
                         </div>""", unsafe_allow_html=True)
-                        st.markdown("#### 📊 Class Probabilities")
+                        st.markdown("#### Class Probabilities")
                         for lbl, p in sorted(img_probs.items(), key=lambda x: -x[1]):
                             prob_bar(lbl, p, SEVERITY_COLORS[lbl])
                         interpretation_block(img_pred)
@@ -878,26 +883,26 @@ def main():
 
     # ── Page: Clinical Rule Engine ───────────────────────────────────────────
     elif st.session_state.current_page == "Clinical":
-        st.markdown("## 📋 Clinical Dementia Rating (CDR)")
+        st.markdown("## Clinical Dementia Rating (CDR)")
         # Genotype
-        st.markdown("### 🧬 APOE Genotype")
+        st.markdown("### APOE Genotype")
         c1, c2 = st.columns([1, 2])
         with c1:
             genotype = st.selectbox("Select genotype", GENOTYPE_OPTIONS, index=3, label_visibility="collapsed")
         
         st.markdown("---")
-        st.markdown("### 📝 CDR Domain Scores")
+        st.markdown("### CDR Domain Scores")
 
         col1, col2, col3 = st.columns(3)
         with col1:
-            memory      = st.selectbox("🧠 Memory *(primary)*", list(CD_OPTIONS.keys()), index=0)
-            orientation = st.selectbox("🧭 Orientation",        list(CD_OPTIONS.keys()), index=0)
+            memory      = st.selectbox("Memory (primary)", list(CD_OPTIONS.keys()), index=0)
+            orientation = st.selectbox("Orientation",        list(CD_OPTIONS.keys()), index=0)
         with col2:
-            judgment      = st.selectbox("⚖️ Judgment & Problem Solving", list(CD_OPTIONS.keys()), index=0)
-            communication = st.selectbox("🏙️ Community Affairs",          list(CD_OPTIONS.keys()), index=0)
+            judgment      = st.selectbox("Judgment & Problem Solving", list(CD_OPTIONS.keys()), index=0)
+            communication = st.selectbox("Community Affairs",          list(CD_OPTIONS.keys()), index=0)
         with col3:
-            home = st.selectbox("🏠 Home & Hobbies", list(CD_OPTIONS.keys()),      index=0)
-            care = st.selectbox("🪥 Personal Care",  list(CD_OPTIONS_CARE.keys()), index=0)
+            home = st.selectbox("Home & Hobbies", list(CD_OPTIONS.keys()),      index=0)
+            care = st.selectbox("Personal Care",  list(CD_OPTIONS_CARE.keys()), index=0)
 
         M_val  = CD_OPTIONS[memory]
         O_val  = CD_OPTIONS[orientation]
@@ -915,7 +920,7 @@ def main():
 
         
         st.markdown("---")
-        if st.button("🧪 Run Clinical Rule Engine", type="primary", use_container_width=True):
+        if st.button("Run Clinical Rule Engine", type="primary", use_container_width=True):
             animated_loader_clinical()
             (tab_pred, tab_conf, tab_probs,
              global_cdr, cdr_sb, reasoning) = predict_clinical(
@@ -935,11 +940,11 @@ def main():
                 <div class='result-conf'>Confidence: {tab_conf:.1f}%&nbsp;&nbsp;|&nbsp;&nbsp;CDR Global: {global_cdr}&nbsp;&nbsp;|&nbsp;&nbsp;CDR-SB: {cdr_sb:.1f}</div>
             </div>""", unsafe_allow_html=True)
 
-            st.markdown("#### 📊 Class Probabilities (after APOE adjustment)")
+            st.markdown("#### Class Probabilities (after APOE adjustment)")
             for lbl, p in sorted(tab_probs.items(), key=lambda x: -x[1]):
                 prob_bar(lbl, p, SEVERITY_COLORS[lbl])
 
-            # with st.expander("🔍 CDR Global Scoring Logic"):
+            # with st.expander("CDR Global Scoring Logic"):
             #     for step in reasoning:
             #         st.markdown(f"<div class='cdr-step'>{step}</div>", unsafe_allow_html=True)
 
@@ -947,7 +952,7 @@ def main():
 
     # ── Page: Fusion ─────────────────────────────────────────────────────────
     elif st.session_state.current_page == "Results":
-        st.markdown("## 📊 Multimodal Fusion Results")
+        st.markdown("## Multimodal Fusion Results")
 
 
         img_probs_stored = st.session_state.get("img_probs")
@@ -961,7 +966,7 @@ def main():
 
         col_img, col_tab = st.columns(2)
         with col_img:
-            st.markdown("### 🖼️ Image Model")
+            st.markdown("### Image Model")
             if have_img:
                 color = SEVERITY_COLORS[st.session_state["img_pred"]]
                 st.markdown(f"""
@@ -976,7 +981,7 @@ def main():
                 st.info("No image analysis run yet.")
 
         with col_tab:
-            st.markdown("### 📋 Clinical Engine")
+            st.markdown("### Clinical Engine")
             if have_tab:
                 color = SEVERITY_COLORS[st.session_state["tab_pred"]]
                 st.markdown(f"""
@@ -992,30 +997,30 @@ def main():
 
         if have_img and have_tab:
             st.markdown("---")
-            st.markdown("### 🔀 Final Fused Prediction")
+            st.markdown("### Final Fused Prediction")
             animated_loader_fusion()
             fused_label, fused_conf, fused_probs = fuse_predictions(
                 img_probs_stored, tab_probs_stored)
             color = SEVERITY_COLORS[fused_label]
             st.markdown(f"""
             <div class='fusion-card'>
-                <div class='result-label' style='color:#bf5af2'>Final Fused Diagnosis</div>
+                <div class='result-label'>Final Fused Diagnosis</div>
                 <div class='fusion-value'>{fused_label}</div>
                 <div class='result-conf' style='margin-top:0.75rem'>
-                    Fused Score: <b style='color:#00ffc8'>{fused_conf:.1f}%</b>
+                    Fused Score: <b>{fused_conf:.1f}%</b>
                    
             </div>""", unsafe_allow_html=True)
-            st.markdown("#### 📊 Fused Class Probabilities")
+            st.markdown("#### Fused Class Probabilities")
             for lbl, p in sorted(fused_probs.items(), key=lambda x: -x[1]):
                 prob_bar(lbl, p, SEVERITY_COLORS[lbl])
-            st.markdown("### 💡 Clinical Interpretation")
+            st.markdown("### Clinical Interpretation")
             interpretation_block(fused_label)
 
         elif have_img:
-            st.markdown("### 💡 Interpretation (Image model only)")
+            st.markdown("### Interpretation (Image model only)")
             interpretation_block(st.session_state["img_pred"])
         else:
-            st.markdown("### 💡 Interpretation (Clinical rule engine only)")
+            st.markdown("### Interpretation (Clinical rule engine only)")
             interpretation_block(st.session_state["tab_pred"])
 
     
